@@ -49,10 +49,31 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: "https://sitara-cinema-book-my-ticket.onrender.com",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: (origin, callback) => {
+    console.log("CORS Origin:", origin);
+    callback(null, true); // temporarily allow all for debugging
+  }
 }));
+
+app.options("*", (req, res) => {
+  console.log("🔥 OPTIONS HIT:", req.originalUrl);
+  res.sendStatus(200);
+});
+
+router.post("/register", (req, res) => {
+  console.log("REGISTER BODY:", req.body);
+  // existing logic
+});
+
+router.post("/login", (req, res) => {
+  console.log("LOGIN BODY:", req.body);
+});
+
+app.use((err, req, res, next) => {
+  console.error("🔥 ERROR:", err.message);
+  console.error(err.stack);
+  res.status(500).send("Internal Server Error");
+});
 
 app.use(express.json());
 

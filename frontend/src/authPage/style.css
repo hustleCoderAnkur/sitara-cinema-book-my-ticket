@@ -1,0 +1,80 @@
+ * {
+     box-sizing: border-box;
+     font-family: "Outfit", sans-serif;
+ }
+
+ .flip-inner {
+     transform-style: preserve-3d;
+     transition: transform 0.65s cubic-bezier(.4, 0, .2, 1);
+ }
+
+ .flip-inner.flipped {
+     transform: rotateY(180deg);
+ }
+
+ .card-face {
+     backface-visibility: hidden;
+     -webkit-backface-visibility: hidden;
+ }
+
+ .card-back {
+     transform: rotateY(180deg);
+ }
+
+ .input-field:focus {
+     border-color: #10b981 !important;
+     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+     outline: none;
+ }
+
+ .toast {
+     transition: opacity 0.35s, transform 0.35s;
+ }
+
+ .toast.show {
+     opacity: 1 !important;
+     transform: translateY(0) !important;
+ }
+
+ .field-error {
+     display: none;
+ }
+
+ .field-error.show {
+     display: block;
+ }
+
+ .star {
+     position: fixed;
+     border-radius: 50%;
+     background: #fff;
+     pointer-events: none;
+     opacity: 0;
+     animation: twinkle var(--dur, 3s) var(--delay, 0s) infinite;
+ }
+
+ @keyframes twinkle {
+
+     0%,
+     100% {
+         opacity: 0
+     }
+
+     50% {
+         opacity: var(--op, 0.6)
+     }
+ }
+
+ .btn-primary:hover {
+     opacity: 0.92;
+     transform: translateY(-1px);
+     box-shadow: 0 8px 28px rgba(16, 185, 129, 0.45) !important;
+ }
+
+ .btn-primary:active {
+     transform: translateY(0);
+ }
+
+ .toggle-link:hover {
+     color: #06b6d4;
+ }

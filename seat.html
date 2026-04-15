@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stellar Seat Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+  >
+    <div
+      class="max-w-7xl w-full bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-slate-700/50"
+    >
+      <div class="text-center mb-10">
+        <h1
+          class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4 tracking-tight"
+        >
+          Sitara Cinema - Now Showing<br />
+          <br />
+          <span class="text-red-400">
+            <span class="font-bold">Dhurandhar The Revenge</span>
+          </span>
+        </h1>
+        <p class="text-slate-400 text-lg">Jassi ko ghar ki yaad kyu nhi aai?</p>
+      </div>
+
+      <div class="flex justify-center mb-10">
+        <div
+          class="bg-slate-900/50 rounded-full px-6 py-3 border border-slate-700 flex gap-8 items-center"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+            ></div>
+            <span class="text-slate-300 font-medium tracking-wide"
+              >Available</span
+            >
+          </div>
+          <div class="w-px h-6 bg-slate-700"></div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-500/50"
+            ></div>
+            <span class="text-slate-400 font-medium tracking-wide">Booked</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center">
+        <div
+          class="bg-slate-900/40 p-8 rounded-2xl border border-slate-700/50 shadow-inner"
+        >
+        <table id="tbl" class="border-separate border-spacing-4 mx-auto "></table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+ async function run() {
+    const tbl = document.getElementById("tbl")
+
+    const baseClasses = "w-16 h-16 rounded-2xl text-center align-middle text-2xl font-bold transition-all ";
+
+    function getBookedHTML(id, name) {
+      return {
+        className: `${baseClasses} bg-rose-500/10 text-rose-500/60 border border-rose-500/20 cursor-not-allowed`,
+        innerHTML: `
+        <span class="relative z-10">${id}</span>
+        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-slate-900 border border-slate-700 text-sm text-slate-300 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-2xl z-50 pointer-events-none font-normal shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
+          Booked by: <span class="font-bold text-white ml-1">${name}</span>
+          <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-[6px] border-transparent border-t-slate-700"></div>
+  <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] border-[5px] border-transparent border-t-slate-900"></div>
+        </div>`
+      }
+    }
+
+    function getAvailableHTML(id) {
+      return {
+        className: `${baseClasses} bg-emerald-500 text-white border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer hover:bg-emerald-400 hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(16,185,129,0.5)] active:scale-95`,
+        innerHTML: `<span class="relative z-10">${id}</span>`
+      }
+    }
+
+    async function initialRender() {
+      const res = await fetch("http://localhost:8080/seats")
+      const seats = await res.json()
+      const sorted = seats.sort((a, b) => a.id - b.id)
+
+      tbl.innerHTML = ""
+      let tr
+
+      for (let i = 0; i < sorted.length; i++) {
+        if (i % 8 === 0) tr = document.createElement("tr")
+
+        const td = document.createElement("td")
+        td.dataset.seatId = sorted[i].id
+
+        if (sorted[i].isbooked) {
+          const { className, innerHTML } = getBookedHTML(sorted[i].id, sorted[i].name)
+          td.className = className
+          td.innerHTML = innerHTML
+        } else {
+          const { className, innerHTML } = getAvailableHTML(sorted[i].id)
+          td.className = className
+          td.innerHTML = innerHTML
+          attachClickHandler(td, sorted[i].id)
+        }
+
+        tr.appendChild(td)
+        tbl.appendChild(tr)
+      }
+    }
+
+    async function refreshSeats() {
+      const res = await fetch("http://localhost:8080/seats")
+      const seats = await res.json()
+
+      for (const seat of seats) {
+        const td = tbl.querySelector(`[data-seat-id="${seat.id}"]`)
+        if (!td) continue
+
+        const alreadyBooked = td.classList.contains("cursor-not-allowed")
+
+        if (seat.isbooked && !alreadyBooked) {
+          const { className, innerHTML } = getBookedHTML(seat.id, seat.name)
+          td.className = className
+          td.innerHTML = innerHTML
+          const newTd = td.cloneNode(false)
+          newTd.className = className
+          newTd.innerHTML = innerHTML
+          newTd.dataset.seatId = seat.id
+          td.replaceWith(newTd)
+        }
+      }
+    }
+
+    function attachClickHandler(td, seatId) {
+      td.addEventListener("click", async function (e) {
+        const currentTd = e.currentTarget
+        if (currentTd.classList.contains("cursor-not-allowed")) return
+
+        try {
+          const token = localStorage.getItem("token")
+
+          if (!token) {
+            window.location.href = "frontend/src/authPage/auth.html"   
+            return
+          }
+
+          const payload = JSON.parse(atob(token.split(".")[1]))
+          const name = payload.name
+          if (!payload) return
+
+          const res = await fetch(`http://localhost:8080/${seatId}/${name}`, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${token}` }
+          })
+
+          const data = await res.json()
+
+          if (data.error) {
+            alert("FAILED! Seat already booked")
+            const { className, innerHTML } = getBookedHTML(seatId, data.bookedBy || "Someone")
+            currentTd.className = className
+            currentTd.innerHTML = innerHTML
+          } else {
+            alert("Booked successfully!")
+            const { className, innerHTML } = getBookedHTML(seatId, name)
+            currentTd.className = className
+            currentTd.innerHTML = innerHTML
+          }
+        } catch (ex) {
+          alert("Error booking: " + ex)
+        }
+      });
+    }
+
+    await initialRender()
+    setInterval(refreshSeats, 2000)
+  }
+  run()
+
+    </script>
+  </body>
+</html>

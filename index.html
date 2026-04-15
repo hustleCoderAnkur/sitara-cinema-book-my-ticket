@@ -462,7 +462,7 @@
             if (!ok) return
 
             try {
-                const res = await fetch('http://localhost:8080/api/auth/login', {
+                const res = await fetch('https://sitaracinema-book-my-ticket-cohort.onrender.com/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password: pass })
@@ -501,7 +501,7 @@
             if (!ok) return
 
             try {
-                const res = await fetch('http://localhost:8080/api/auth/register', {
+                const res = await fetch('https://sitaracinema-book-my-ticket-cohort.onrender.com/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password: pass, confirmPassword: pass2 })
@@ -568,7 +568,7 @@
                         const name = payload.name
                         if (!name) return
 
-                        const res = await fetch(`http://localhost:8080/${seatId}/${name}`, {
+                        const res = await fetch(`https://sitaracinema-book-my-ticket-cohort.onrender.com/${seatId}/${name}`, {
                             method: 'PUT',
                             headers: { 'Authorization': `Bearer ${token}` }
                         })
@@ -593,7 +593,7 @@
 
             async function initialRender() {
                 try {
-                    const res = await fetch('http://localhost:8080/seats')
+                    const res = await fetch('https://sitaracinema-book-my-ticket-cohort.onrender.com/seats')
                     const seats = await res.json()
                     const sorted = seats.sort((a, b) => a.id - b.id)
 
@@ -624,10 +624,10 @@
                     tbl.innerHTML = `<tr><td class="text-slate-400 text-center p-8">Could not load seats. Is the server running?</td></tr>`
                 }
             }
-
+            
             async function refreshSeats() {
                 try {
-                    const res = await fetch('http://localhost:8080/seats')
+                    const res = await fetch('https://sitaracinema-book-my-ticket-cohort.onrender.com/seats')
                     const seats = await res.json()
 
                     for (const seat of seats) {

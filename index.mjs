@@ -38,31 +38,28 @@ const pool = new pg.Pool({
 
 const app = new express();
 
-app.use(cors({
-  origin: "https://sitara-cinema-book-my-ticket.onrender.com",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false
-}));
+const allowedOrigins = [
+  "https://sitara-cinema-book-my-ticket.onrender.com",
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
+
 const corsOptions = {
-  origin: "https://sitara-cinema-book-my-ticket.onrender.com",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false
 };
 
 app.use(cors(corsOptions));
-app.options("/{*splat}", cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-
-app.use(express.static(__dirname));
-
-app.get("/{*splat}", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-})
 
 //get all seats
 app.get("/seats", async (req, res) => {

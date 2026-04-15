@@ -13,7 +13,6 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import authRoutes from './backend/src/modules/auth/auth.route.js'
 import dotenv from "dotenv";
-import cors from "cors"
 
 dotenv.config()
 

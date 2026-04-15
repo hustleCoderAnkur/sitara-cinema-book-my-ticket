@@ -1,134 +1,132 @@
-//  CREATE TABLE seats (
-//      id SERIAL PRIMARY KEY,
-//      name VARCHAR(255),
-//      isbooked INT DEFAULT 0
-//  );
-// INSERT INTO seats (isbooked)
-// SELECT 0 FROM generate_series(1, 20);
-
 import express from "express";
-import path from "path";
+import { dirname } from "path";
 import { fileURLToPath } from "url";
-import pg from "pg";
 import cors from "cors";
-import authRoutes from './backend/src/modules/auth/auth.route.js'
-import dotenv from "dotenv";
-
-dotenv.config()
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+import { pool, initDB } from "./src/common/db.js";
+import authRoutes from "./src/modules/auth/auth.routes.js";
+import authenticate from "./src/common/middlewares/auth.middleware.js";
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const port = process.env.PORT || 8080;
 
-// Equivalent to mongoose connection
-// Pool is nothing but group of connections
-// If you pick one connection out of the pool and release it
-// the pooler will keep that connection open for sometime to other clients to reuse
-const pool = new pg.Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  max: 20,
-  connectionTimeoutMillis: 0,
-  idleTimeoutMillis: 0,
-});
-
-const app = new express();
-
-app.use((req, res, next) => {
-  console.log("---- REQUEST ----");
-  console.log("Method:", req.method);
-  console.log("URL:", req.originalUrl);
-  console.log("Origin:", req.headers.origin);
-  console.log("Headers:", req.headers);
-  console.log("-----------------\n");
-  next();
-});
-
-app.use(cors({
-  origin: (origin, callback) => {
-    console.log("CORS Origin:", origin);
-    callback(null, true); // temporarily allow all for debugging
-  }
-}));
-
-app.options("*", (req, res) => {
-  console.log("🔥 OPTIONS HIT:", req.originalUrl);
-  res.sendStatus(200);
-});
-
-router.post("/register", (req, res) => {
-  console.log("REGISTER BODY:", req.body);
-  // existing logic
-});
-
-router.post("/login", (req, res) => {
-  console.log("LOGIN BODY:", req.body);
-});
-
-app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err.message);
-  console.error(err.stack);
-  res.status(500).send("Internal Server Error");
-});
-
+const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 
-app.use(cors(corsOptions));
-
-app.use(express.json());
-
-//get all seats
-app.get("/seats", async (req, res) => {
-  const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
-  res.send(result.rows);
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
 });
 
-//book a seat give the seatId and your name
-
-app.put("/:id/:name", async (req, res) => {
+app.get("/seats", async (req, res) => {
   try {
-    const id = req.params.id;
-    const name = req.params.name;
-    // payment integration should be here
-    // verify payment
-    const conn = await pool.connect(); // pick a connection from the pool
-    //begin transaction
-    // KEEP THE TRANSACTION AS SMALL AS POSSIBLE
-    await conn.query("BEGIN");
-    //getting the row to make sure it is not booked
-    /// $1 is a variable which we are passing in the array as the second parameter of query function,
-    // Why do we use $1? -> this is to avoid SQL INJECTION
-    // (If you do ${id} directly in the query string,
-    // then it can be manipulated by the user to execute malicious SQL code)
-    const sql = "SELECT * FROM seats where id = $1 and isbooked = 0 FOR UPDATE";
-    const result = await conn.query(sql, [id]);
+    const movie_id = req.query.movie_id || 1;
+    const checkSql = "SELECT COUNT(*) FROM seats WHERE movie_id = $1 AND isbooked = FALSE";
+    const checkResult = await pool.query(checkSql, [movie_id]);
+    const availableCount = parseInt(checkResult.rows[0].count);
 
-    //if no rows found then the operation should fail can't book
-    // This shows we Do not have the current seat available for booking
-    if (result.rowCount === 0) {
-      res.send({ error: "Seat already booked" });
-      return;
+    if (availableCount === 0) {
+      await pool.query("UPDATE seats SET isbooked = FALSE, name = NULL, user_id = NULL WHERE movie_id = $1", [movie_id]);
     }
-    //if we get the row, we are safe to update
-    const sqlU = "update seats set isbooked = 1, name = $2 where id = $1";
-    const updateResult = await conn.query(sqlU, [id, name]); // Again to avoid SQL INJECTION we are using $1 and $2 as placeholders
 
-    //end transaction by committing
-    await conn.query("COMMIT");
-    conn.release(); // release the connection back to the pool (so we do not keep the connection open unnecessarily)
-    res.send(updateResult);
-  } catch (ex) {
-    console.log(ex);
-    res.send(500);
+    const result = await pool.query(
+      "SELECT * FROM seats WHERE movie_id = $1 ORDER BY seat_number::int ASC, id ASC",
+      [movie_id]
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.error("Error fetching seats:", err.message);
+    res.status(500).send({ error: "Failed to fetch seats" });
   }
 });
 
-app.listen(port, () => console.log("Server starting on port: " + port));
+app.get("/api/my-bookings", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.user_id || req.user.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized user context." });
+    }
+    const sql = `
+      SELECT b.id, b.seat_number, m.title 
+      FROM bookings b 
+      JOIN movies m ON b.movie_id = m.id 
+      WHERE b.user_id = $1
+      ORDER BY b.booked_at DESC, m.title, b.seat_number::int
+    `;
+    const result = await pool.query(sql, [userId]);
+    res.send(result.rows);
+  } catch (err) {
+    console.error("My Bookings fetch error:", err.message);
+    res.status(500).send({ error: "Failed to fetch bookings" });
+  }
+});
 
-export default pool
+app.put("/:id/:name", authenticate, async (req, res) => {
+  const conn = await pool.connect();
+  try {
+    const id = req.params.id;
+    const name = req.params.name;
+    const userId = req.user.user_id;
+
+    await conn.query("BEGIN");
+
+    const sql =
+      "SELECT * FROM seats WHERE id = $1 AND isbooked = false FOR UPDATE";
+    const result = await conn.query(sql, [id]);
+
+    if (result.rowCount === 0) {
+      await conn.query("ROLLBACK");
+      res.send({ error: "Seat already booked" });
+      return;
+    }
+
+    const sqlU =
+      "UPDATE seats SET isbooked = true, name = $2, user_id = $3 WHERE id = $1 RETURNING *";
+    const updateResult = await conn.query(sqlU, [id, name, userId]);
+    const movieId = result.rows[0].movie_id;
+    const seatNumber = result.rows[0].seat_number;
+    await conn.query(
+      "INSERT INTO bookings (user_id, movie_id, seat_number) VALUES ($1, $2, $3)",
+      [userId, movieId, seatNumber]
+    );
+
+    await conn.query("COMMIT");
+    res.send({ message: "Seat booked successfully", details: updateResult.rows[0] });
+  } catch (ex) {
+    await conn.query("ROLLBACK");
+    console.error("Booking error:", ex.message);
+    res.status(500).send({ error: "Booking failed" });
+  } finally {
+    conn.release();
+  }
+});
+
+
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
+
+
+async function startServer() {
+  try {
+    await initDB();
+    app.listen(port, () =>
+      console.log("Server starting on port: " + port)
+    );
+  } catch (err) {
+    console.error("Failed to start server:", err.message);
+    process.exit(1);
+  }
+}
+
+startServer();

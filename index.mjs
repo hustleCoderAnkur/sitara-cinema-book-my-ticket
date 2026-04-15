@@ -13,6 +13,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import authRoutes from './backend/src/modules/auth/auth.route.js'
 import dotenv from "dotenv";
+import cors from "cors"
 
 dotenv.config()
 
@@ -36,10 +37,11 @@ const pool = new pg.Pool({
 });
 
 const app = new express();
-app.use(cors());
+
+app.use(cors())
 app.use(express.json())
-app.use("/api/auth", authRoutes)
 app.use(express.static("."))
+app.use("/api/auth", authRoutes)
 
 app.use((req, res) => {
   res.sendFile(path.resolve("index.html"))

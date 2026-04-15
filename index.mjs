@@ -39,7 +39,6 @@ const pool = new pg.Pool({
   idleTimeoutMillis: 0,
 });
 
-const app = new express();
 
 app.use(cors({
   origin: "https://sitara-cinema-book-my-ticket.onrender.com",

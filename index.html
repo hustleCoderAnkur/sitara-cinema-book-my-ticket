@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sitara Cinema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Outfit", sans-serif;
+        }
+
+        .page {
+            display: none;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .flip-inner {
+            transform-style: preserve-3d;
+            transition: transform 0.65s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .flip-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .input-field:focus {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            outline: none;
+        }
+
+        .toast {
+            transition: opacity 0.35s, transform 0.35s;
+        }
+
+        .toast.show {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+
+        .field-error {
+            display: none;
+        }
+
+        .field-error.show {
+            display: block;
+        }
+
+        .star {
+            position: fixed;
+            border-radius: 50%;
+            background: #fff;
+            pointer-events: none;
+            opacity: 0;
+            animation: twinkle var(--dur, 3s) var(--delay, 0s) infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0
+            }
+
+            50% {
+                opacity: var(--op, 0.6)
+            }
+        }
+
+        .btn-primary:hover {
+            opacity: .92;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(16, 185, 129, .45) !important;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .toggle-link:hover {
+            color: #06b6d4;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-50">
+
+    <div id="stars"></div>
+
+    <div id="toast" class="toast fixed top-6 right-6 z-[9999] pointer-events-none opacity-0 -translate-y-3
+           bg-gradient-to-r from-emerald-500 to-cyan-500 text-white
+           px-5 py-3 rounded-xl font-semibold text-sm shadow-[0_8px_30px_rgba(16,185,129,0.4)]">
+    </div>
+
+    <nav id="mainNav"
+        class="flex items-center justify-between px-8 py-5 bg-slate-800/40 backdrop-blur-xl border-b border-slate-700/30 hidden">
+        <div>
+            <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 cursor-pointer"
+                onclick="showPage('home')">
+                Sitara Cinema
+            </h1>
+        </div>
+        <div id="navRight">
+        </div>
+    </nav>
+
+    <div id="homePage" class="page">
+        <main class="px-8 py-12">
+            <h2 class="text-3xl font-bold mb-10 text-center">Discover Your Next Movie</h2>
+
+            <div class="flex justify-center">
+                <div
+                    class="w-full max-w-sm rounded-3xl bg-slate-800/80 backdrop-blur-xl border border-slate-700/30 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden transition hover:-translate-y-1 hover:shadow-[0_35px_80px_rgba(0,0,0,0.65)]">
+
+                    <div class="relative bg-[#080d12] h-[210px] flex items-center justify-center overflow-hidden">
+                        <img src="posters/dhurandhar_poster.avif" alt="Dhurandhar"
+                            class="w-full h-full object-cover absolute inset-0" />
+                    </div>
+
+                    <div class="p-8">
+                        <div class="flex items-start justify-between gap-4 mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold">Dhurandhar</h3>
+                                <p class="text-slate-400 text-sm mt-1">Jassi ko ghar ki yaad kyu nhi aai?</p>
+                            </div>
+                            <button onclick="handleBookingIntent()"
+                                class="btn-primary bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:opacity-90 hover:-translate-y-[1px] transition whitespace-nowrap border-none cursor-pointer">
+                                Book Ticket
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-3 my-5">
+                            <div class="flex-1 h-px bg-slate-700/50"></div>
+                        </div>
+
+                        <p class="text-center text-slate-600 mb-4 italic">
+                            Now Playing:
+                            <span class="text-rose-400 font-semibold">Dhurandhar: The Revenge</span>
+                        </p>
+
+                        <div class="flex flex-wrap gap-2 mb-4 ml-6">
+                            <span
+                                class="bg-white/10 border border-slate-400/20 text-slate-400 text-xs font-semibold tracking-wide px-3 py-1 rounded-md uppercase">UA
+                                16+</span>
+                            <span
+                                class="bg-white/10 border border-slate-400/20 text-slate-400 text-xs font-semibold tracking-wide px-3 py-1 rounded-md uppercase">Thriller</span>
+                            <span
+                                class="bg-white/10 border border-slate-400/20 text-slate-400 text-xs font-semibold tracking-wide px-3 py-1 rounded-md uppercase">IMAX
+                                2D</span>
+                        </div>
+
+                        <p class="text-slate-500 text-xs">
+                            Cast: <span class="text-slate-400 font-semibold">Ranveer Singh, Akshay Khanna, Arjun Rampal,
+                                Sanjay Dutt</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="authPage" class="page">
+        <div class="min-h-screen flex items-center justify-center p-6">
+            <div class="w-full max-w-[460px] [perspective:1200px]">
+                <div class="flip-inner relative w-full" id="flipper">
+
+                    <div
+                        class="card-face rounded-3xl bg-slate-800/80 backdrop-blur-xl border border-slate-700/30 shadow-[0_25px_60px_rgba(0,0,0,0.5)] p-10">
+                        <div class="text-center mb-8">
+                            <h1
+                                class="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                                Sitara Cinema
+                            </h1>
+                            <p class="text-slate-400 mt-1 text-sm">Sign in to book your seat</p>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Email Address</label>
+                            <input id="loginEmail" type="email"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="your Email Address" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="loginEmailErr">Please enter a valid
+                                email</p>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Password</label>
+                            <input id="loginPass" type="password"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="Enter your password" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="loginPassErr">Password must be at
+                                least 6 characters</p>
+                        </div>
+
+                        <button onclick="handleLogin()"
+                            class="btn-primary mt-4 w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-base rounded-xl py-[14px] cursor-pointer shadow-[0_4px_20px_rgba(16,185,129,0.3)] transition-all duration-150 border-none">
+                            Sign In
+                        </button>
+
+                        <div class="flex items-center gap-3 my-5">
+                            <div class="flex-1 h-px bg-slate-700/50"></div>
+                            <span class="text-slate-500 text-lg">New here?</span>
+                            <div class="flex-1 h-px bg-slate-700/50"></div>
+                        </div>
+
+                        <p class="text-center text-slate-400">
+                            Don't have an account?
+                            <span class="toggle-link text-emerald-500 font-semibold cursor-pointer transition-colors"
+                                onclick="flip()"> Sign Up </span>
+                        </p>
+                        <p class="text-center text-slate-600 mt-5 italic">
+                            Now showing: <span class="text-rose-400 font-semibold">Dhurandhar The Revenge</span>
+                        </p>
+                    </div>
+
+                    <div
+                        class="card-face card-back absolute top-0 left-0 w-full rounded-2xl bg-slate-800/80 backdrop-blur-xl border border-slate-700/30 shadow-[0_25px_60px_rgba(0,0,0,0.5)] p-10">
+                        <div class="text-center mb-7">
+                            <h1
+                                class="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                                Create Account
+                            </h1>
+                            <p class="text-slate-400 mt-1">Create your account &amp; start booking</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Full Name</label>
+                            <input id="regName" type="text"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="Enter your Name" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="regNameErr">Please enter your name</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Email Address</label>
+                            <input id="regEmail" type="email"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="Enter your Email Address" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="regEmailErr">Please enter a valid
+                                email</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Password</label>
+                            <input id="regPass" type="password"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="Enter your password" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="regPassErr">Password must be at least
+                                6 characters</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-slate-300 text-sm font-semibold mb-2">Confirm Password</label>
+                            <input id="regPass2" type="password"
+                                class="input-field w-full bg-slate-900/70 border border-slate-600/40 rounded-xl px-4 py-3 text-slate-50 text-sm placeholder:text-slate-500 transition-all duration-200"
+                                placeholder="Re-enter your password" />
+                            <p class="field-error text-rose-400 text-xs mt-1" id="regPass2Err">Passwords do not match.
+                            </p>
+                        </div>
+
+                        <button onclick="handleRegister()"
+                            class="btn-primary w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-xl py-[14px] cursor-pointer shadow-[0_4px_20px_rgba(16,185,129,0.3)] transition-all duration-150 border-none">
+                            Create Account
+                        </button>
+
+                        <div class="flex items-center gap-3 my-5">
+                            <div class="flex-1 h-px bg-slate-700/50"></div>
+                            <span class="text-slate-500">Already a member?</span>
+                            <div class="flex-1 h-px bg-slate-700/50"></div>
+                        </div>
+
+                        <p class="text-center text-slate-400 text-sm">
+                            Already have an account?
+                            <span class="toggle-link text-emerald-400 font-semibold cursor-pointer transition-colors"
+                                onclick="flip()">Sign in</span>
+                        </p>
+                        <p class="text-center text-slate-600 mt-5 italic">
+                            Now showing: <span class="text-rose-400 font-semibold">Dhurandhar The Revenge</span>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="seatPage" class="page">
+        <div class="flex items-center justify-center p-6 min-h-[calc(100vh-73px)]">
+            <div
+                class="max-w-7xl w-full bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-slate-700/50">
+
+                <div class="text-center mb-10">
+                    <h1
+                        class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4 tracking-tight">
+                        Sitara Cinema — Now Showing<br /><br />
+                        <span class="text-red-400 font-bold">Dhurandhar The Revenge</span>
+                    </h1>
+                    <p class="text-slate-400 text-lg">Jassi ko ghar ki yaad kyu nhi aai?</p>
+                </div>
+
+                <div class="flex justify-center mb-10">
+                    <div class="bg-slate-900/50 rounded-full px-6 py-3 border border-slate-700 flex gap-8 items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]">
+                            </div>
+                            <span class="text-slate-300 font-medium tracking-wide">Available</span>
+                        </div>
+                        <div class="w-px h-6 bg-slate-700"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-500/50"></div>
+                            <span class="text-slate-400 font-medium tracking-wide">Booked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-700/50 shadow-inner">
+                        <table id="tbl" class="border-separate border-spacing-4 mx-auto"></table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const starsEl = document.getElementById('stars')
+        for (let i = 0; i < 60; i++) {
+            const s = document.createElement('div')
+            s.className = 'star'
+            const size = Math.random() * 2 + 1
+            s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random() * 100}vh;left:${Math.random() * 100}vw;--dur:${(Math.random() * 4 + 2).toFixed(1)}s;--delay:${(Math.random() * 5).toFixed(1)}s;--op:${(Math.random() * 0.4 + 0.2).toFixed(2)}`
+            starsEl.appendChild(s)
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast')
+            t.textContent = msg
+            t.classList.add('show')
+            setTimeout(() => t.classList.remove('show'), 3200)
+        }
+
+        function showErr(id, msg) {
+            const el = document.getElementById(id)
+            el.textContent = msg
+            el.classList.add('show')
+        }
+        function clearErr(id) { document.getElementById(id).classList.remove('show') }
+        function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) }
+
+        function flip() { document.getElementById('flipper').classList.toggle('flipped') }
+
+        function checkAuth() {
+            return !!localStorage.getItem('token')
+        }
+
+        function updateNav() {
+            const navRight = document.getElementById('navRight')
+            if (checkAuth()) {
+                let name = ''
+                try {
+                    const payload = JSON.parse(atob(localStorage.getItem('token').split('.')[1]))
+                    name = payload.name || ''
+                } catch { }
+                navRight.innerHTML = `
+          <div class="flex items-center gap-4">
+            ${name ? `<span class="text-slate-300 text-sm font-semibold">Hi, ${name} 👋</span>` : ''}
+            <button onclick="handleLogout()"
+              class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold px-4 py-2 rounded-xl text-sm transition">
+              Sign Out
+            </button>
+          </div>`
+            } else {
+                navRight.innerHTML = `
+          <button onclick="showPage('auth')"
+            class="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold px-5 py-2.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:opacity-90 transition">
+            Sign In
+          </button>`
+            }
+        }
+
+        function showPage(page) {
+            const pages = ['home', 'auth', 'seat']
+            const nav = document.getElementById('mainNav')
+
+            pages.forEach(p => {
+                const el = document.getElementById(p + 'Page')
+                el.classList.remove('active', 'visible')
+            })
+
+            if (page === 'auth') {
+                nav.classList.add('hidden')
+            } else {
+                nav.classList.remove('hidden')
+                updateNav()
+            }
+
+            window.location.hash = page
+
+            const target = document.getElementById(page + 'Page')
+            target.classList.add('active')
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => target.classList.add('visible'))
+            })
+
+            if (page === 'seat') {
+                bootSeatPage()
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('token')
+            localStorage.removeItem('redirectAfterLogin')
+            showToast('Signed out.')
+            showPage('home')
+        }
+
+        function handleBookingIntent() {
+            if (!checkAuth()) {
+                localStorage.setItem('redirectAfterLogin', 'seat')
+                showPage('auth')
+            } else {
+                showPage('seat')
+            }
+        }
+
+        async function handleLogin() {
+            let ok = true
+            const email = document.getElementById('loginEmail').value.trim()
+            const pass = document.getElementById('loginPass').value
+
+            clearErr('loginEmailErr'); clearErr('loginPassErr')
+
+            if (!isValidEmail(email)) { showErr('loginEmailErr', 'Please enter a valid email.'); ok = false }
+            if (pass.length < 6) { showErr('loginPassErr', 'Password must be at least 6 characters.'); ok = false }
+
+            if (!ok) return
+
+            try {
+                const res = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                })
+                const result = await res.json()
+
+                if (res.ok) {
+                    localStorage.setItem('token', result.data.token)
+                    showToast('Logged in!')
+                    const redirect = localStorage.getItem('redirectAfterLogin') || 'home'
+                    localStorage.removeItem('redirectAfterLogin')
+                    setTimeout(() => showPage(redirect), 300)
+                } else {
+                    showToast(result.message || 'Login failed.')
+                }
+            } catch (err) {
+                console.error(err)
+                showToast('Server error')
+            }
+        }
+
+        async function handleRegister() {
+            let ok = true
+            const name = document.getElementById('regName').value.trim()
+            const email = document.getElementById('regEmail').value.trim()
+            const pass = document.getElementById('regPass').value
+            const pass2 = document.getElementById('regPass2').value
+
+            clearErr('regNameErr'); clearErr('regEmailErr'); clearErr('regPassErr'); clearErr('regPass2Err')
+
+            if (!name) { showErr('regNameErr', 'Please enter your name.'); ok = false }
+            if (!isValidEmail(email)) { showErr('regEmailErr', 'Please enter a valid email.'); ok = false }
+            if (pass.length < 6) { showErr('regPassErr', 'Password must be at least 6 chars.'); ok = false }
+            if (pass !== pass2) { showErr('regPass2Err', 'Passwords do not match.'); ok = false }
+
+            if (!ok) return
+
+            try {
+                const res = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password: pass, confirmPassword: pass2 })
+                })
+                const result = await res.json()
+
+                if (res.ok) {
+                    localStorage.setItem('token', result.data.token)
+                    showToast('Account created! Welcome 🎉')
+                    const redirect = localStorage.getItem('redirectAfterLogin') || 'home'
+                    localStorage.removeItem('redirectAfterLogin')
+                    setTimeout(() => showPage(redirect), 300)
+                } else {
+                    showToast(result.message || 'Registration failed.')
+                }
+            } catch (err) {
+                console.error(err)
+                showToast('Server error')
+            }
+        }
+
+        let seatPollInterval = null
+
+        function bootSeatPage() {
+            if (seatPollInterval) { clearInterval(seatPollInterval); seatPollInterval = null }
+
+            const tbl = document.getElementById('tbl')
+            const baseClasses = 'w-16 h-16 rounded-2xl text-center align-middle text-2xl font-bold transition-all relative group '
+
+            function getBookedHTML(id, name) {
+                return {
+                    className: `${baseClasses} bg-rose-500/10 text-rose-500/60 border border-rose-500/20 cursor-not-allowed`,
+                    innerHTML: `
+            <span class="relative z-10">${id}</span>
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-slate-900 border border-slate-700 text-sm text-slate-300 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-2xl z-50 pointer-events-none font-normal">
+              Booked by: <span class="font-bold text-white ml-1">${name}</span>
+              <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-[6px] border-transparent border-t-slate-700"></div>
+              <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] border-[5px] border-transparent border-t-slate-900"></div>
+            </div>`
+                }
+            }
+
+            function getAvailableHTML(id) {
+                return {
+                    className: `${baseClasses} bg-emerald-500 text-white border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer hover:bg-emerald-400 hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(16,185,129,0.5)] active:scale-95`,
+                    innerHTML: `<span class="relative z-10">${id}</span>`
+                }
+            }
+
+            function attachClickHandler(td, seatId) {
+                td.addEventListener('click', async function (e) {
+                    const currentTd = e.currentTarget
+                    if (currentTd.classList.contains('cursor-not-allowed')) return
+
+                    const token = localStorage.getItem('token')
+                    if (!token) {
+                        localStorage.setItem('redirectAfterLogin', 'seat')
+                        showPage('auth')
+                        return
+                    }
+
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]))
+                        const name = payload.name
+                        if (!name) return
+
+                        const res = await fetch(`http://localhost:8080/${seatId}/${name}`, {
+                            method: 'PUT',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                        const data = await res.json()
+
+                        if (data.error) {
+                            showToast('Seat already booked!')
+                            const { className, innerHTML } = getBookedHTML(seatId, data.bookedBy || 'Someone')
+                            currentTd.className = className
+                            currentTd.innerHTML = innerHTML
+                        } else {
+                            showToast('Seat booked successfully! 🎬')
+                            const { className, innerHTML } = getBookedHTML(seatId, name)
+                            currentTd.className = className
+                            currentTd.innerHTML = innerHTML
+                        }
+                    } catch (ex) {
+                        showToast('Error booking seat: ' + ex.message)
+                    }
+                })
+            }
+
+            async function initialRender() {
+                try {
+                    const res = await fetch('http://localhost:8080/seats')
+                    const seats = await res.json()
+                    const sorted = seats.sort((a, b) => a.id - b.id)
+
+                    tbl.innerHTML = ''
+                    let tr
+
+                    for (let i = 0; i < sorted.length; i++) {
+                        if (i % 8 === 0) tr = document.createElement('tr')
+
+                        const td = document.createElement('td')
+                        td.dataset.seatId = sorted[i].id
+
+                        if (sorted[i].isbooked) {
+                            const { className, innerHTML } = getBookedHTML(sorted[i].id, sorted[i].name)
+                            td.className = className
+                            td.innerHTML = innerHTML
+                        } else {
+                            const { className, innerHTML } = getAvailableHTML(sorted[i].id)
+                            td.className = className
+                            td.innerHTML = innerHTML
+                            attachClickHandler(td, sorted[i].id)
+                        }
+
+                        tr.appendChild(td)
+                        tbl.appendChild(tr)
+                    }
+                } catch (err) {
+                    tbl.innerHTML = `<tr><td class="text-slate-400 text-center p-8">Could not load seats. Is the server running?</td></tr>`
+                }
+            }
+
+            async function refreshSeats() {
+                try {
+                    const res = await fetch('http://localhost:8080/seats')
+                    const seats = await res.json()
+
+                    for (const seat of seats) {
+                        const td = tbl.querySelector(`[data-seat-id="${seat.id}"]`)
+                        if (!td) continue
+
+                        const alreadyBooked = td.classList.contains('cursor-not-allowed')
+                        if (seat.isbooked && !alreadyBooked) {
+                            const { className, innerHTML } = getBookedHTML(seat.id, seat.name)
+                            const newTd = document.createElement('td')
+                            newTd.className = className
+                            newTd.innerHTML = innerHTML
+                            newTd.dataset.seatId = seat.id
+                            td.replaceWith(newTd)
+                        }
+                    }
+                } catch { }
+            }
+
+            initialRender()
+            seatPollInterval = setInterval(refreshSeats, 2000)
+        }
+
+        function routeFromHash() {
+            const hash = window.location.hash.replace('#', '') || 'home'
+            const valid = ['home', 'auth', 'seat']
+            const page = valid.includes(hash) ? hash : 'home'
+
+            if (page === 'seat' && !checkAuth()) {
+                localStorage.setItem('redirectAfterLogin', 'seat')
+                showPage('auth')
+                return
+            }
+
+            showPage(page)
+        }
+
+        window.addEventListener('hashchange', routeFromHash)
+
+        routeFromHash()
+    </script>
+</body>
+
+</html>

@@ -44,15 +44,25 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false
 }));
-app.use(express.json())
-app.use(express.static("."))
-app.use("/api/auth", authRoutes)
+const corsOptions = {
+  origin: "https://sitara-cinema-book-my-ticket.onrender.com",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false
+};
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(cors(corsOptions));
+app.options("/{*splat}", cors(corsOptions));
+
+app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+
+app.use(express.static(__dirname));
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
-});
+})
 
 //get all seats
 app.get("/seats", async (req, res) => {

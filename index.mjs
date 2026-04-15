@@ -45,9 +45,9 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve("index.html"))
 })
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
+app.use((req, res) => {
+  res.sendFile(path.resolve("index.html"))
+})
 //get all seats
 app.get("/seats", async (req, res) => {
   const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose

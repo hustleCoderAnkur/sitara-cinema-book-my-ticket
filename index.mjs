@@ -7,16 +7,17 @@
 // SELECT 0 FROM generate_series(1, 20);
 
 import express from "express";
-import pg from "pg";
-import { dirname } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
+import pg from "pg";
 import cors from "cors";
 import authRoutes from './backend/src/modules/auth/auth.route.js'
 import dotenv from "dotenv";
 
 dotenv.config()
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const port = process.env.PORT || 8080;
 
@@ -47,9 +48,11 @@ app.use(express.json())
 app.use(express.static("."))
 app.use("/api/auth", authRoutes)
 
-app.use((req, res) => {
-  res.sendFile(path.resolve("index.html"))
-})
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/{*splat}", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 //get all seats
 app.get("/seats", async (req, res) => {

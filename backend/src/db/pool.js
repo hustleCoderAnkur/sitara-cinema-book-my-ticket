@@ -16,4 +16,8 @@ const pool = process.env.DATABASE_URL
         database: process.env.DB_NAME,
     });
 
+pool.query("SELECT 1")
+    .then(() => console.log("✅ DB CONNECTED"))
+    .catch(err => console.error("❌ DB CONNECTION ERROR:", err.message));
+
 export default pool

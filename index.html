@@ -498,6 +498,9 @@
             if (pass.length < 6) { showErr('regPassErr', 'Password must be at least 6 chars.'); ok = false }
             if (pass !== pass2) { showErr('regPass2Err', 'Passwords do not match.'); ok = false }
 
+
+            console.log("REGISTER REQUEST:", { name, email, pass });
+
             if (!ok) return
 
             try {

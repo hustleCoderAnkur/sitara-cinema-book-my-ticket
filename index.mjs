@@ -42,6 +42,44 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
+async function initDB() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        email VARCHAR(255) UNIQUE,
+        password VARCHAR(255)
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS seats (
+        id SERIAL PRIMARY KEY,
+        seat_number INT,
+        isbooked BOOLEAN DEFAULT false,
+        name VARCHAR(255)
+      );
+    `);
+
+    const check = await pool.query("SELECT COUNT(*) FROM seats");
+    if (parseInt(check.rows[0].count) === 0) {
+      for (let i = 1; i <= 64; i++) {
+        await pool.query(
+          "INSERT INTO seats (seat_number, isbooked) VALUES ($1, false)",
+          [i]
+        );
+      }
+      console.log("Seats inserted");
+    }
+
+    console.log("DB ready");
+  } catch (err) {
+    console.error("DB init error:", err.message);
+    throw err;
+  }
+}
+
 //get all seats
 app.get("/seats", async (req, res) => {
   const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
@@ -85,4 +123,15 @@ app.put("/:id/:name", async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log("Server starting on port: " + port));
+async function startServer() {
+  try {
+    await initDB(); 
+    app.listen(port, () => {
+      console.log("Server running on port:", port);
+    });
+  } catch (err) {
+    process.exit(1);
+  }
+}
+
+startServer()

@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import pool from '../../../../index.mjs'
+import pool from '../../db/pool.js';
 import ApiError from '../../common/utils/apiError.js';
 
 const registerUser = async ({name,email,password}) => {
@@ -36,7 +36,7 @@ const loginUser = async ({ email, password }) => {
 
     const isMatched = await bcrypt.compare(password, user.password)
     
-    if (!user) {
+    if (!isMatched) {
         throw new ApiError(400,"wrong password")
     }
     return user

@@ -13,6 +13,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import authRoutes from './backend/src/modules/auth/auth.route.js'
 import dotenv from "dotenv";
+import pool from './backend/src/db/pool.js';
 
 dotenv.config()
 
@@ -21,16 +22,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const port = process.env.PORT || 8080
 // If you pick one connection out of the pool and release it
 // the pooler will keep that connection open for sometime to other clients to reuse
-const pool = new pg.Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  max: 20,
-  connectionTimeoutMillis: 0,
-  idleTimeoutMillis: 0,
-});
 
 const app = new express();
 
@@ -95,5 +86,3 @@ app.put("/:id/:name", async (req, res) => {
 });
 
 app.listen(port, () => console.log("Server starting on port: " + port));
-
-export default pool

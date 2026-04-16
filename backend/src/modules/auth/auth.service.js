@@ -8,7 +8,7 @@ const registerUser = async ({name,email,password}) => {
     );
 
     if (existing.rows.length > 0) {
-        throw new ApiError(400,'user does not exists')
+        throw new ApiError(400,'user already exists')
     }
     
     const hashedPassword = await bcrypt.hash(password, 10)

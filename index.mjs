@@ -35,11 +35,15 @@ const pool = new pg.Pool({
 const app = new express();
 
 app.use(cors({
-  origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
+  origin: [
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    'https://sitara-cinema-book-my-ticket.onrender.com'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.options('/{*path}', cors()); // ✅ Express 5 syntax
+app.options('/{*path}', cors()); 
 app.use(express.json())
 app.use("/api/auth", authRoutes)
 

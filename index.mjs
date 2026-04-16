@@ -25,17 +25,6 @@ const port = process.env.PORT || 8080
 
 const app = new express();
 
-app.use((req, res, next) => {
-  console.log("\n===== INCOMING REQUEST =====");
-  console.log("Time:", new Date().toISOString());
-  console.log("Method:", req.method);
-  console.log("URL:", req.originalUrl);
-  console.log("Origin:", req.headers.origin);
-  console.log("Body:", req.body);
-  console.log("===========================\n");
-  next();
-});
-
 app.use(cors({
   origin: [
     'http://127.0.0.1:5500',
@@ -45,18 +34,13 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 app.options('/{*path}', cors()); 
 app.use(express.json())
 app.use("/api/auth", authRoutes)
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
-});
-
-app.use((err, req, res, next) => {
-  console.error("💥 GLOBAL ERROR:", err.message);
-  console.error(err.stack);
-  res.status(500).send("Internal Server Error");
 });
 
 async function initDB() {
@@ -96,24 +80,11 @@ async function initDB() {
     throw err;
   }
 }
-
-app.get("/seats", async (req, res) => {
-  console.log("🎬 Fetching seats...");
-  try {
-    const result = await pool.query("select * from seats");
-    console.log("Seats count:", result.rows.length);
-    res.send(result.rows);
-  } catch (err) {
-    console.error("❌ SEATS ERROR:", err.message);
-    res.status(500).send({ error: err.message });
-  }
-});
-
 //get all seats
-// app.get("/seats", async (req, res) => {
-//   const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
-//   res.send(result.rows);
-// });
+app.get("/seats", async (req, res) => {
+  const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
+  res.send(result.rows);
+});
 
 //book a seat give the seatId and your name
 
@@ -130,7 +101,6 @@ app.put("/:id/:name", async (req, res) => {
     //getting the row to make sure it is not booked
     /// $1 is a variable which we are passing in the array as the second parameter of query function,
     
-    console.log("🎟 Booking attempt:", { id, name });
 
     const sql = "SELECT * FROM seats where id = $1 and isbooked = 0 FOR UPDATE";
     const result = await conn.query(sql, [id]);
@@ -154,13 +124,6 @@ app.put("/:id/:name", async (req, res) => {
     res.send(500);
   }
 });
-
-console.log("🚀 Initializing DB...");
-
-await pool.query("SELECT 1");
-console.log("✅ DB connection verified");
-
-console.log("📦 Creating tables...");
 
 async function startServer() {
   try {
